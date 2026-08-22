@@ -1,99 +1,262 @@
-# DayFlow — Human Resource Management System
+# Dayflow – Human Resource Management System
 
-*Every workday, perfectly aligned.*
+## Project Overview
 
-DayFlow is a full-stack HRMS built with **Flask**, **SQLite**, and vanilla **HTML/CSS/JS**, styled in a Sage Green + Cream corporate theme. It covers authentication, employee management, attendance, leave, payroll, reports and notifications for both employees and HR/Admin users.
+Dayflow is a centralized Human Resource Management System designed to simplify and digitize essential HR operations. The system provides a unified platform for managing employee information, attendance, leave, payroll, departments, job positions, and other HR activities.
 
----
+The primary objective of Dayflow is to reduce manual HR processes, improve data accuracy, increase transparency, and provide an efficient workflow for both employees and HR administrators.
 
-## ✨ Features
+## Problem Statement
 
-- **Authentication** — Sign up, sign in, forgot password, role-based sessions (Employee / HR-Admin), hashed passwords.
-- **Dashboards** — Live, database-driven stats for both employee and admin roles.
-- **Employee Management** — Full CRUD, search, department filters, profile photos, documents.
-- **Attendance** — Employee check-in/check-out, daily/weekly/monthly history; HR can view, mark, edit and delete records for anyone. "Present Today" always reflects the live count.
-- **Leave & Time-Off** — Employees apply for leave; HR approves/rejects with comments; approved leave auto-marks attendance as "Leave".
-- **Payroll** — HR updates salary structure and generates monthly salary slips; employees view salary and download professional PDF payslips.
-- **Reports** — Attendance, leave, payroll and employee reports with simple visual charts, exportable as PDF or Excel.
-- **Notifications** — In-app bell notifications for leave decisions, payroll generation and new accounts.
-- **Documents** — Upload/preview Aadhaar, resume, offer letter and certificates (PDF/PNG/JPG).
+Traditional HR management often depends on paperwork, spreadsheets, and disconnected systems. These processes can make employee record management, attendance tracking, leave management, payroll processing, and HR reporting time-consuming and error-prone.
 
----
+Organizations need a centralized system that can manage employee information and HR operations efficiently while providing different levels of access to employees and HR administrators.
 
-## 🗂 Project Structure
+Dayflow addresses these challenges by providing a centralized HR management platform with role-based access and organized HR workflows.
 
+## Proposed Solution
+
+Dayflow provides a single platform where employees and HR administrators can manage HR-related activities according to their respective roles.
+
+The system brings essential HR operations together into one centralized platform, making it easier to manage employee information, attendance, leave, payroll, and HR-related activities.
+
+The major areas of the system include:
+
+* Employee Management
+* Department and Job Position Management
+* Attendance Management
+* Leave Management
+* Payroll Management
+* Employee Records
+* HR Dashboard and Analytics
+* Role-Based Access Control
+
+## Key Features
+
+### Employee Management
+
+* Create and manage employee profiles
+* Maintain personal and professional information
+* Manage departments and job positions
+* Store employee records in a centralized system
+* Provide easy access to employee information
+
+### Attendance Management
+
+* Record employee attendance
+* Track working hours
+* Maintain attendance history
+* Monitor employee attendance status
+* Provide attendance information to authorized users
+
+### Leave Management
+
+* Submit leave requests
+* Review leave applications
+* Approve or reject leave requests
+* Track leave status
+* Maintain leave history
+
+### Payroll Management
+
+* Maintain employee salary information
+* Manage payroll records
+* Organize employee salary details
+* Provide structured payroll information
+* Simplify payroll-related HR operations
+
+### Dashboard and Analytics
+
+* Display employee statistics
+* Provide attendance overview
+* Display leave statistics
+* Provide centralized HR information
+* Support HR decision-making through organized data
+
+### Role-Based Access
+
+The system provides different functionalities based on user roles.
+
+#### Admin / HR
+
+* Manage employees
+* Manage departments
+* Manage job positions
+* Monitor attendance
+* Manage leave requests
+* Manage payroll
+* Access HR information and reports
+
+#### Employee
+
+* View personal profile
+* View attendance information
+* Apply for leave
+* Track leave status
+* Access relevant personal HR information
+
+## System Architecture
+
+```text
+Users
+  |
+  v
+Dayflow User Interface
+  |
+  v
+Odoo Application Layer
+  |
+  +------------------+------------------+
+  |                  |                  |
+  v                  v                  v
+Employee          Attendance          Leave
+Management        Management         Management
+  |                  |                  |
+  +------------------+------------------+
+                     |
+                     v
+              Payroll Management
+                     |
+                     v
+                PostgreSQL
+                  Database
 ```
-DayFlow-HRMS/
-├── app.py                  # App factory & route registration
-├── config.py                # App configuration
-├── database.py               # SQLite connection & schema
-├── requirements.txt
-├── blueprints/
-│   ├── auth.py               # Sign up / sign in / logout
-│   ├── admin.py               # HR/Admin routes
-│   └── employee.py            # Employee routes
-├── utils/
-│   ├── auth_helper.py          # Decorators & validation
-│   ├── email_helper.py          # Email notification stubs
-│   └── report_helper.py         # PDF / Excel generation
+
+## Application Workflow
+
+```text
+                         Login
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
+         Admin / HR                  Employee
+             |                           |
+      +------+------+              +-----+------+
+      |      |      |              |     |      |
+      v      v      v              v     v      v
+ Employee Attendance Leave       Profile Attendance Leave
+ Management Management Management       Management Application
+      |      |      |                    |          |
+      +------+------+                    +----------+
+             |
+             v
+          Payroll
+             |
+             v
+         Analytics
+```
+
+## Project Objectives
+
+* Digitize traditional HR processes
+* Centralize employee information
+* Simplify attendance management
+* Simplify leave management
+* Improve payroll management
+* Reduce manual work and paperwork
+* Reduce human errors
+* Improve HR workflow efficiency
+* Provide role-based access control
+* Improve transparency between employees and HR
+* Provide a scalable HR management solution
+
+## Benefits
+
+* Centralized HR operations
+* Reduced manual processes
+* Better organization of employee information
+* Faster access to HR records
+* Improved employee experience
+* Improved transparency
+* Reduced chances of data entry errors
+* Structured HR workflows
+* Easy management of employee-related activities
+
+## Technology Stack
+
+* Platform: Odoo
+* Backend: Python
+* Frontend: HTML, CSS, JavaScript
+* Database: PostgreSQL
+* Development Environment: Visual Studio Code
+* Version Control: Git and GitHub
+
+## Project Structure
+
+```text
+Dayflow/
+│
+├── README.md
+├── models/
+├── views/
+├── controllers/
+├── security/
 ├── static/
-│   ├── css/style.css
-│   ├── js/script.js
-│   └── uploads/{profile,documents}/
-└── templates/
-    ├── base.html
-    ├── auth/
-    ├── admin/
-    └── employee/
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── data/
+├── demo/
+├── screenshots/
+└── documentation/
 ```
 
----
+## Future Enhancements
 
-## 🚀 Getting Started (VS Code / Local)
+* AI-powered HR assistant
+* Mobile application
+* Advanced HR analytics
+* Automated notifications
+* Email integration
+* Automated payslip generation
+* Employee performance analytics
+* Advanced reporting
+* Enhanced security and audit management
+* Integration with additional HR services
 
-1. **Create a virtual environment** (recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate      # Windows: venv\Scripts\activate
-   ```
+## Team
 
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Team Leader
 
-3. **Run the app**:
-   ```bash
-   python app.py
-   ```
-   The database (`dayflow.db`) and upload folders are created automatically on first run, along with a seeded HR/Admin account.
+**Harini S P**
 
-4. **Open** `http://127.0.0.1:5000` in your browser.
+Role: Team Leader and Developer
 
----
+Contribution:
 
-## 🔑 Demo Login
+* Project planning
+* Problem analysis
+* System design
+* Application development
+* Module integration
+* Testing
+* Documentation
+* Project presentation
 
-| Role  | Email               | Password   |
-|-------|----------------------|------------|
-| Admin | admin@dayflow.com    | Admin@123  |
+### Team Member
 
-You can also sign up new Employee or HR/Admin accounts from the **Sign Up** page.
+**Dhanushiya**
 
----
+Role: Team Member and Developer
 
-## 🧱 Tech Stack
+Contribution:
 
-- **Backend:** Python, Flask, Flask Blueprints
-- **Database:** SQLite (raw `sqlite3`, no ORM)
-- **Frontend:** HTML5, CSS3 (custom design system), vanilla JavaScript
-- **Auth:** Werkzeug password hashing, Flask sessions
-- **Documents:** ReportLab (PDF salary slips & reports), openpyxl (Excel exports)
+* Application development
+* Feature implementation
+* Testing
+* Documentation
+* Project support
 
----
+## Team Structure
 
-## 📝 Notes
+| S.No | Name         | Role        |
+| ---- | ------------ | ----------- |
+| 1    | S.P. Harini  | Team Leader |
+| 2    | S Dhanushiya | Team Member |
 
-- Email sending is stubbed to the console by default (see `utils/email_helper.py`). Set `DAYFLOW_SMTP_HOST`, `DAYFLOW_SMTP_USER`, `DAYFLOW_SMTP_PASSWORD` environment variables to enable real SMTP delivery.
-- Default leave balance is a fixed 24 days/year for demo purposes — adjust in `blueprints/employee.py` if your organization uses a different policy.
-- For production use, set a strong `DAYFLOW_SECRET_KEY` environment variable and switch off Flask debug mode.
+Project Name: Dayflow – Human Resource Management System
+
+The project focuses on building a centralized and efficient HR management solution using the Odoo ecosystem. The system is designed to simplify HR operations, improve employee management, and provide an organized workflow for employees and HR administrators.
+
+Project Link : https://day-flow.onrender.com
