@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Payroll{% endblock %}
+{% block page_title %}My Payroll{% endblock %}
+{% block page_subtitle %}View your salary structure and download salary slips{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h3>Current Salary Structure</h3>
+  <div class="grid grid-4" style="margin-top:14px;">
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Basic Salary</div><div style="font-weight:800; font-size:18px;">₹{{ "{:,.2f}".format(employee.basic_salary) }}</div></div>
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Allowance</div><div style="font-weight:800; font-size:18px; color:var(--success);">+₹{{ "{:,.2f}".format(employee.allowance) }}</div></div>
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Deduction</div><div style="font-weight:800; font-size:18px; color:var(--danger);">−₹{{ "{:,.2f}".format(employee.deduction) }}</div></div>
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Net Salary</div><div style="font-weight:800; font-size:18px; color:var(--primary-hover);">₹{{ "{:,.2f}".format(net_salary) }}</div></div>
+  </div>
+</div>
+
+<div class="section-title-row"><h2>Salary Slips</h2></div>
+{% if slips %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Month</th><th>Net Salary</th><th>Generated On</th><th></th></tr></thead>
+    <tbody>
+    {% for s in slips %}
+      <tr>
+        <td>{{ month_names[s.month] }} {{ s.year }}</td>
+        <td>₹{{ "{:,.2f}".format(s.net_salary) }}</td>
+        <td>{{ s.generated_at }}</td>
+        <td><a href="{{ url_for('employee.download_slip', year=s.year, month=s.month) }}" class="btn btn-outline btn-sm">⬇ Download PDF</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="ic">💰</div>
+  <h3>No salary slips yet</h3>
+  <p>Once HR generates your monthly payroll, your slips will appear here for download.</p>
+</div>
+{% endif %}
+{% endblock %}

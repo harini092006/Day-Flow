@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Leave Approvals{% endblock %}
+{% block page_title %}Leave Approvals{% endblock %}
+{% block page_subtitle %}Review and act on employee leave requests{% endblock %}
+
+{% block content %}
+<form method="GET" class="toolbar">
+  <select name="status" onchange="this.form.submit()" style="max-width:200px;">
+    <option value="" {{ 'selected' if not status_filter }}>All Statuses</option>
+    <option value="Pending" {{ 'selected' if status_filter == 'Pending' }}>Pending</option>
+    <option value="Approved" {{ 'selected' if status_filter == 'Approved' }}>Approved</option>
+    <option value="Rejected" {{ 'selected' if status_filter == 'Rejected' }}>Rejected</option>
+  </select>
+</form>
+
+{% if rows %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for lr in rows %}
+      <tr>
+        <td>{{ lr.full_name }}<br><span style="color:var(--text-secondary); font-size:12px;">{{ lr.employee_code }} · {{ lr.department or '—' }}</span></td>
+        <td>{{ lr.leave_type }}</td>
+        <td>{{ lr.start_date }} → {{ lr.end_date }}</td>
+        <td style="max-width:220px;">{{ lr.reason }}</td>
+        <td>
+          {% if lr.status == 'Approved' %}<span class="badge badge-success">Approved</span>
+          {% elif lr.status == 'Rejected' %}<span class="badge badge-danger">Rejected</span>
+          {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+        </td>
+        <td style="white-space:nowrap;">
+          {% if lr.status == 'Pending' %}
+          <button type="button" class="btn btn-primary btn-sm" data-modal-target="#decideModal{{ lr.id }}">Review</button>
+          {% else %}
+          <span style="font-size:12px; color:var(--text-secondary);">{{ lr.admin_comment or 'No comment' }}</span>
+          {% endif %}
+        </td>
+      </tr>
+
+      {% if lr.status == 'Pending' %}
+      <div class="modal-overlay" id="decideModal{{ lr.id }}">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h3 style="margin:0;">Review Leave — {{ lr.full_name }}</h3>
+            <button class="modal-close" data-modal-close>✕</button>
+          </div>
+          <p style="font-size:13.5px; color:var(--text-secondary);"><strong>{{ lr.leave_type }}</strong> · {{ lr.start_date }} to {{ lr.end_date }}</p>
+          <p style="font-size:13.5px;">{{ lr.reason }}</p>
+          <form method="POST" action="{{ url_for('admin.decide_leave', leave_id=lr.id) }}">
+            <div class="form-group">
+              <label>Comment (optional)</label>
+              <textarea name="comment" placeholder="Add a note for the employee"></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button type="submit" name="decision" value="approve" class="btn btn-primary btn-block">✅ Approve</button>
+              <button type="submit" name="decision" value="reject" class="btn btn-danger btn-block">✕ Reject</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="ic">🗓️</div>
+  <h3>No leave requests found</h3>
+  <p>Requests will appear here as employees apply for leave.</p>
+</div>
+{% endif %}
+{% endblock %}

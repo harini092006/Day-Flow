@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Query · {{ q.subject }}{% endblock %}
+{% block page_title %}{{ q.subject }}{% endblock %}
+{% block page_subtitle %}From {{ q.full_name }} ({{ q.employee_code }}) · {{ q.department or 'Unassigned' }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px;">
+  <div class="section-title-row" style="margin-bottom:16px;">
+    <h3 style="margin:0;">Conversation</h3>
+    {% if q.status == 'Resolved' %}<span class="badge badge-success">Resolved</span>
+    {% elif q.status == 'Replied' %}<span class="badge badge-primary">Replied</span>
+    {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+  </div>
+
+  {% for m in messages %}
+  <div class="doc-item" style="flex-direction:column; align-items:flex-start; gap:4px; {{ 'background:var(--bg-cream); border-color: var(--primary);' if m.sender_role == 'hr' }}">
+    <div style="display:flex; justify-content:space-between; width:100%;">
+      <strong>{{ 'HR' if m.sender_role == 'hr' else m.sender_name }}</strong>
+      <span style="font-size:11.5px; color:var(--text-secondary);">{{ m.created_at }}</span>
+    </div>
+    <div style="font-size:13.5px;">{{ m.message }}</div>
+  </div>
+  {% endfor %}
+
+  {% if q.status != 'Resolved' %}
+  <form method="POST" style="margin-top:16px;">
+    <div class="form-group">
+      <label>Reply to employee</label>
+      <textarea name="message" placeholder="Type your reply..."></textarea>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button type="submit" name="action" value="reply" class="btn btn-primary">Send Reply</button>
+      <button type="submit" name="action" value="resolve" class="btn btn-outline" onclick="return true;">Mark as Resolved</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="help-text" style="margin-top:12px;">This query has been resolved.</div>
+  {% endif %}
+
+  <div class="divider"></div>
+  <a href="{{ url_for('admin.queries') }}" class="btn btn-outline btn-sm">← Back to all queries</a>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account · DayFlow HRMS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script>
+  (function () {
+    var saved = localStorage.getItem("dayflow-theme");
+    if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  })();
+</script>
+</head>
+<body>
+<button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle dark mode" title="Toggle dark / light mode" style="position:fixed; top:18px; left:18px; z-index:999;">🌙</button>
+<div class="flash-stack">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="toast {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<div class="auth-shell">
+  <div class="auth-visual">
+    <div class="brand"><div class="brand-mark">D</div> DayFlow</div>
+    <h2>Set up your workspace in minutes.</h2>
+    <p>Create an employee or HR/Admin account to start tracking attendance, leave and payroll today.</p>
+    <ul class="feature-list">
+      <li>✅ Secure password hashing on every account</li>
+      <li>✅ Role-based dashboards for employees and HR</li>
+      <li>✅ Your data lives in your own SQLite database</li>
+    </ul>
+  </div>
+  <div class="auth-form-side">
+    <div class="auth-card" style="max-width:460px;">
+      <h1>Create your account</h1>
+      <p class="sub">Join DayFlow as an employee or HR administrator.</p>
+
+      <form method="POST" action="{{ url_for('auth.signup') }}">
+        <div class="form-row">
+          <div class="form-group">
+            <label id="idLabel">{{ 'HR ID' if form.get('role') == 'admin' else 'Employee ID' }} <span class="req">*</span></label>
+            <input type="text" id="idInput" name="employee_id" value="{{ form.get('employee_id','') }}" required placeholder="{{ 'HR0123' if form.get('role') == 'admin' else 'EMP0123' }}">
+          </div>
+          <div class="form-group">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" name="full_name" value="{{ form.get('full_name','') }}" required placeholder="Jane Doe">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email address <span class="req">*</span></label>
+          <input type="email" name="email" value="{{ form.get('email','') }}" required placeholder="you@company.com">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password <span class="req">*</span></label>
+            <input type="password" name="password" required minlength="8" placeholder="Min. 8 characters">
+          </div>
+          <div class="form-group">
+            <label>Confirm Password <span class="req">*</span></label>
+            <input type="password" name="confirm_password" required minlength="8" placeholder="Re-enter password">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Role <span class="req">*</span></label>
+          <select name="role" id="roleSelect" onchange="toggleIdLabel(this.value)">
+            <option value="employee" {{ 'selected' if form.get('role') == 'employee' }}>Employee</option>
+            <option value="admin" {{ 'selected' if form.get('role') == 'admin' }}>HR / Admin</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+
+      <p class="switch-link">Already have an account? <a href="{{ url_for('auth.signin') }}">Sign in</a></p>
+    </div>
+  </div>
+</div>
+<script>
+function toggleIdLabel(role) {
+  var label = document.getElementById('idLabel');
+  var input = document.getElementById('idInput');
+  var isAdmin = role === 'admin';
+  label.firstChild.nodeValue = isAdmin ? 'HR ID ' : 'Employee ID ';
+  input.placeholder = isAdmin ? 'HR0123' : 'EMP0123';
+}
+</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

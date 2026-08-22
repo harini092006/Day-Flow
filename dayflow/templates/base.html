@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}DayFlow{% endblock %} · DayFlow HRMS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236BBF8A%22/><text x=%2250%25%22 y=%2262%25%22 font-size=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22>D</text></svg>">
+<script>
+  // Applied before first paint so there is no light-mode flash on load.
+  (function () {
+    var saved = localStorage.getItem("dayflow-theme");
+    if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  })();
+</script>
+</head>
+<body>
+
+<div class="flash-stack" id="flashStack">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="toast {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div>
+        DayFlow
+        <small>Every workday, aligned.</small>
+      </div>
+    </div>
+
+    {% if session.get('role') == 'admin' %}
+    <div class="nav-section-title">Overview</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' }}"><span class="ic">📊</span> Dashboard</a>
+    </nav>
+    <div class="nav-section-title">Workforce</div>
+    <nav>
+      <a href="{{ url_for('admin.employees') }}" class="{{ 'active' if request.endpoint in ['admin.employees','admin.add_employee','admin.edit_employee','admin.employee_profile'] }}"><span class="ic">🧑‍💼</span> Employees</a>
+      <a href="{{ url_for('admin.attendance') }}" class="{{ 'active' if request.endpoint == 'admin.attendance' }}"><span class="ic">🕒</span> Attendance</a>
+      <a href="{{ url_for('admin.leave_requests') }}" class="{{ 'active' if request.endpoint == 'admin.leave_requests' }}"><span class="ic">🗓️</span> Leave Approvals</a>
+      <a href="{{ url_for('admin.queries') }}" class="{{ 'active' if request.endpoint in ['admin.queries','admin.query_detail'] }}"><span class="ic">💬</span> Employee Queries</a>
+      <a href="{{ url_for('admin.recognize') }}" class="{{ 'active' if request.endpoint == 'admin.recognize' }}"><span class="ic">⭐</span> Recognize Employee</a>
+      <a href="{{ url_for('admin.announcements') }}" class="{{ 'active' if request.endpoint == 'admin.announcements' }}"><span class="ic">📢</span> Announcements</a>
+    </nav>
+    <div class="nav-section-title">Finance</div>
+    <nav>
+      <a href="{{ url_for('admin.payroll') }}" class="{{ 'active' if request.endpoint == 'admin.payroll' }}"><span class="ic">💰</span> Payroll</a>
+      <a href="{{ url_for('admin.reports') }}" class="{{ 'active' if request.endpoint == 'admin.reports' }}"><span class="ic">📈</span> Reports</a>
+    </nav>
+    {% else %}
+    <div class="nav-section-title">Overview</div>
+    <nav>
+      <a href="{{ url_for('employee.dashboard') }}" class="{{ 'active' if request.endpoint == 'employee.dashboard' }}"><span class="ic">📊</span> Dashboard</a>
+      <a href="{{ url_for('employee.profile') }}" class="{{ 'active' if request.endpoint == 'employee.profile' }}"><span class="ic">👤</span> My Profile</a>
+    </nav>
+    <div class="nav-section-title">Work</div>
+    <nav>
+      <a href="{{ url_for('employee.attendance') }}" class="{{ 'active' if request.endpoint == 'employee.attendance' }}"><span class="ic">🕒</span> Attendance</a>
+      <a href="{{ url_for('employee.leave') }}" class="{{ 'active' if request.endpoint == 'employee.leave' }}"><span class="ic">🗓️</span> Leave</a>
+      <a href="{{ url_for('employee.payroll') }}" class="{{ 'active' if request.endpoint == 'employee.payroll' }}"><span class="ic">💰</span> Payroll</a>
+      <a href="{{ url_for('employee.documents') }}" class="{{ 'active' if request.endpoint == 'employee.documents' }}"><span class="ic">📁</span> Documents</a>
+      <a href="{{ url_for('employee.queries') }}" class="{{ 'active' if request.endpoint in ['employee.queries','employee.query_detail'] }}"><span class="ic">💬</span> Ask HR</a>
+    </nav>
+    {% endif %}
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}"><span class="ic">🚪</span> Sign Out</a>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="mobile-toggle" aria-label="Toggle navigation">☰</button>
+        <div>
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+          <div class="subtitle">{% block page_subtitle %}{{ company_name }}{% endblock %}</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle dark mode" title="Toggle dark / light mode">🌙</button>
+        <div class="bell-wrap">
+          <button class="bell-btn" data-modal-target="#notifModal" aria-label="Notifications">🔔</button>
+          {% if unread_notifications and unread_notifications > 0 %}
+          <span class="bell-dot">{{ unread_notifications if unread_notifications < 10 else '9+' }}</span>
+          {% endif %}
+        </div>
+        <div class="user-chip">
+          <div class="avatar">{{ session.get('full_name','?')[:1] }}</div>
+          <div>
+            <div class="name">{{ session.get('full_name','') }}</div>
+            <div class="role">{{ session.get('employee_code','') }} · {{ session.get('role','')|capitalize }}</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<!-- Notifications modal -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 style="margin:0;">Notifications</h3>
+      <button class="modal-close" data-modal-close>✕</button>
+    </div>
+    {% if recent_notifications %}
+      {% for n in recent_notifications %}
+      <div class="doc-item" style="align-items:flex-start; flex-direction:column; gap:4px; {{ 'border-color:var(--primary); background:var(--bg-cream);' if not n.is_read }}">
+        {% if n.title %}<div style="font-weight:700; font-size:12.5px;">{{ n.title }}</div>{% endif %}
+        <div style="font-weight:600;">{{ n.message }}</div>
+        <div style="font-size:11.5px; color:var(--text-secondary);">{{ n.created_at }}{% if not n.is_read %} · <strong style="color:var(--primary-hover);">Unread</strong>{% endif %}</div>
+      </div>
+      {% endfor %}
+      <form method="POST" action="{{ url_for('admin.mark_notifications_read') if session.get('role') == 'admin' else url_for('employee.mark_notifications_read') }}" style="margin-top:10px;">
+        <button type="submit" class="btn btn-ghost btn-block btn-sm">Mark all as read</button>
+      </form>
+    {% else %}
+      <div class="empty-state" style="padding:26px 10px;">
+        <div class="ic">🔔</div>
+        <h3>No notifications yet</h3>
+        <p>You're all caught up.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

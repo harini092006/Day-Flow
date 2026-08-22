@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Ask HR{% endblock %}
+{% block page_title %}Ask HR{% endblock %}
+{% block page_subtitle %}Submit a question and track HR's replies{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card">
+    <h3>New Query</h3>
+    <form method="POST" action="{{ url_for('employee.new_query') }}">
+      <div class="form-group">
+        <label>Subject <span class="req">*</span></label>
+        <input type="text" name="subject" placeholder="e.g. Payslip question" required>
+      </div>
+      <div class="form-group">
+        <label>Your Question <span class="req">*</span></label>
+        <textarea name="message" placeholder="Describe your question for HR..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Send to HR</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>My Queries</h3>
+    {% if queries %}
+      {% for q in queries %}
+      <a href="{{ url_for('employee.query_detail', query_id=q.id) }}" style="display:block;">
+        <div class="doc-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
+          <div style="display:flex; justify-content:space-between; width:100%;">
+            <strong>{{ q.subject }}</strong>
+            {% if q.status == 'Resolved' %}<span class="badge badge-success">Resolved</span>
+            {% elif q.status == 'Replied' %}<span class="badge badge-primary">Replied</span>
+            {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+          </div>
+          <div style="font-size:11.5px; color:var(--text-secondary);">Last updated {{ q.updated_at }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state" style="padding:30px 10px;">
+      <div class="ic">💬</div>
+      <h3>No queries yet</h3>
+      <p>Questions you send to HR will show up here.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

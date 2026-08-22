@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+{% block page_subtitle %}Track your check-ins and view your attendance history{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h3>Today</h3>
+  <p style="color:var(--text-secondary); font-size:13.5px;">
+    {% if today_att and today_att.check_in %}
+      Checked in at <strong>{{ today_att.check_in }}</strong>{% if today_att.check_out %} · Checked out at <strong>{{ today_att.check_out }}</strong>{% endif %}
+    {% else %}
+      You haven't checked in yet today.
+    {% endif %}
+  </p>
+  <form method="POST" style="display:flex; gap:10px;">
+    <button type="submit" name="action" value="check_in" class="btn btn-primary" {{ 'disabled' if today_att and today_att.check_in }}>✅ Check In</button>
+    <button type="submit" name="action" value="check_out" class="btn btn-outline" {{ 'disabled' if not today_att or not today_att.check_in or today_att.check_out }}>🚪 Check Out</button>
+  </form>
+</div>
+
+<div class="section-title-row">
+  <h2>Attendance History</h2>
+  <div class="tabs" style="border:none; margin:0;">
+    <a href="{{ url_for('employee.attendance', view='daily') }}" class="{{ 'active' if view == 'daily' }}">Daily</a>
+    <a href="{{ url_for('employee.attendance', view='weekly') }}" class="{{ 'active' if view == 'weekly' }}">Weekly</a>
+    <a href="{{ url_for('employee.attendance', view='monthly') }}" class="{{ 'active' if view == 'monthly' }}">Monthly</a>
+  </div>
+</div>
+
+{% if records %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for a in records %}
+      <tr>
+        <td>{{ a.att_date }}</td>
+        <td>{{ a.check_in or '—' }}</td>
+        <td>{{ a.check_out or '—' }}</td>
+        <td>
+          {% if a.status == 'Present' %}<span class="badge badge-success">Present</span>
+          {% elif a.status == 'Half-Day' %}<span class="badge badge-warning">Half-Day</span>
+          {% elif a.status == 'Leave' %}<span class="badge badge-primary">Leave</span>
+          {% else %}<span class="badge badge-danger">Absent</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="ic">🕒</div>
+  <h3>No attendance records yet</h3>
+  <p>Check in above to start building your attendance history for this period.</p>
+</div>
+{% endif %}
+{% endblock %}

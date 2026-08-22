@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Leave{% endblock %}
+{% block page_title %}Leave & Time-Off{% endblock %}
+{% block page_subtitle %}Apply for leave and track your requests{% endblock %}
+
+{% block content %}
+<div class="grid grid-4">
+  <div class="card stat-card">
+    <div class="stat-icon">🗓️</div>
+    <div class="stat-value">{{ leave_info.allowance|int }}</div>
+    <div class="stat-label">Annual Leave Allowed</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">📤</div>
+    <div class="stat-value">{{ leave_info.taken }}</div>
+    <div class="stat-label">Leave Taken</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value" style="color:var(--success);">{{ leave_info.balance|int if leave_info.balance == leave_info.balance|int else leave_info.balance }}</div>
+    <div class="stat-label">Leave Balance</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-value" style="color:var(--warning);">{{ leave_info.pending_days }}</div>
+    <div class="stat-label">Pending Leave (Days)</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="align-items:start; margin-top:18px;">
+  <div class="card">
+    <h3>Apply for Leave</h3>
+    <form method="POST">
+      <div class="form-group">
+        <label>Leave Type <span class="req">*</span></label>
+        <select name="leave_type" required>
+          <option value="Paid Leave">Paid Leave</option>
+          <option value="Sick Leave">Sick Leave</option>
+          <option value="Casual Leave">Casual Leave</option>
+          <option value="Unpaid Leave">Unpaid Leave</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date <span class="req">*</span></label>
+          <input type="date" name="start_date" required>
+        </div>
+        <div class="form-group">
+          <label>End Date <span class="req">*</span></label>
+          <input type="date" name="end_date" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Reason <span class="req">*</span></label>
+        <textarea name="reason" required placeholder="Briefly describe the reason for leave"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea name="remarks" placeholder="Optional additional notes"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Leave History</h3>
+    {% if history %}
+      {% for lr in history %}
+      <div class="doc-item" style="flex-direction:column; align-items:flex-start; gap:6px;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <strong>{{ lr.leave_type }}</strong>
+          {% if lr.status == 'Approved' %}<span class="badge badge-success">Approved</span>
+          {% elif lr.status == 'Rejected' %}<span class="badge badge-danger">Rejected</span>
+          {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+        </div>
+        <div style="font-size:12.5px; color:var(--text-secondary);">{{ lr.start_date }} → {{ lr.end_date }}</div>
+        <div style="font-size:13px;">{{ lr.reason }}</div>
+        {% if lr.admin_comment %}
+        <div style="font-size:12px; color:var(--text-secondary);">HR note: {{ lr.admin_comment }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state" style="padding:30px 10px;">
+      <div class="ic">🗓️</div>
+      <h3>No leave requests yet</h3>
+      <p>Your submitted requests will appear here.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

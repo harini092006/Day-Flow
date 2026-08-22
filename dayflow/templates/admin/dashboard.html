@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}HR Dashboard{% endblock %}
+{% block page_subtitle %}Welcome back, {{ session.get('full_name') }}. Here's what's happening today.{% endblock %}
+
+{% block content %}
+<div class="grid grid-4">
+  <div class="card stat-card">
+    <div class="stat-icon">🧑‍💼</div>
+    <div class="stat-value">{{ total_employees }}</div>
+    <div class="stat-label">Total Employees</div>
+  </div>
+  <button type="button" class="card stat-card" style="text-align:left; border:1px solid var(--border); width:100%;" data-modal-target="#presentModal">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value" style="color:var(--success);">{{ present_today }}</div>
+    <div class="stat-label">Present Today</div>
+  </button>
+  <button type="button" class="card stat-card" style="text-align:left; border:1px solid var(--border); width:100%;" data-modal-target="#absentModal">
+    <div class="stat-icon">🚫</div>
+    <div class="stat-value" style="color:var(--danger);">{{ absent_today }}</div>
+    <div class="stat-label">Absent Today</div>
+  </button>
+  <button type="button" class="card stat-card" style="text-align:left; border:1px solid var(--border); width:100%;" data-modal-target="#halfDayModal">
+    <div class="stat-icon">🌓</div>
+    <div class="stat-value" style="color:var(--warning);">{{ half_day_today }}</div>
+    <div class="stat-label">Half-Day Employees</div>
+  </button>
+</div>
+
+{% macro roster_modal(id, title, icon, rows) %}
+<div class="modal-overlay" id="{{ id }}">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="modal-header">
+      <h3 style="margin:0;">{{ icon }} {{ title }}</h3>
+      <button class="modal-close" data-modal-close>✕</button>
+    </div>
+    {% if rows %}
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Employee</th><th>ID</th><th>Department</th><th>Status</th><th>In</th><th>Out</th></tr></thead>
+        <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ r.full_name }}</td>
+            <td>{{ r.employee_code }}</td>
+            <td>{{ r.department or '—' }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.check_in or '—' }}</td>
+            <td>{{ r.check_out or '—' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:26px 10px;">
+      <div class="ic">{{ icon }}</div>
+      <h3>No one here</h3>
+      <p>No employees currently in this category today.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{{ roster_modal("presentModal", "Present Today", "✅", present_list) }}
+{{ roster_modal("absentModal", "Absent Today", "🚫", absent_list) }}
+{{ roster_modal("halfDayModal", "Half-Day Today", "🌓", half_day_list) }}
+
+<div class="grid grid-3" style="margin-top:18px;">
+  <div class="card stat-card">
+    <div class="stat-icon">🗓️</div>
+    <div class="stat-value">{{ on_leave_today }}</div>
+    <div class="stat-label">On Leave Today</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-value">{{ pending_leaves }}</div>
+    <div class="stat-label">Pending Leave Requests</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">₹{{ "{:,.0f}".format(monthly_payroll) }}</div>
+    <div class="stat-label">Monthly Payroll Amount</div>
+  </div>
+</div>
+
+<div class="section-title-row">
+  <h2>Quick Actions</h2>
+</div>
+<div class="grid grid-4">
+  <a href="{{ url_for('admin.add_employee') }}" class="card btn-ghost" style="text-align:center; padding:22px 10px;">
+    <div style="font-size:22px;">➕</div>
+    <div style="font-weight:700; margin-top:6px; font-size:13.5px;">Add Employee</div>
+  </a>
+  <a href="{{ url_for('admin.employees') }}" class="card btn-ghost" style="text-align:center; padding:22px 10px;">
+    <div style="font-size:22px;">🧑‍💼</div>
+    <div style="font-weight:700; margin-top:6px; font-size:13.5px;">Manage Employees</div>
+  </a>
+  <a href="{{ url_for('admin.attendance') }}" class="card btn-ghost" style="text-align:center; padding:22px 10px;">
+    <div style="font-size:22px;">🕒</div>
+    <div style="font-weight:700; margin-top:6px; font-size:13.5px;">Mark Attendance</div>
+  </a>
+  <a href="{{ url_for('admin.leave_requests') }}" class="card btn-ghost" style="text-align:center; padding:22px 10px;">
+    <div style="font-size:22px;">🗓️</div>
+    <div style="font-weight:700; margin-top:6px; font-size:13.5px;">Leave Approvals</div>
+  </a>
+</div>
+
+<div class="grid grid-2" style="margin-top:28px; align-items:start;">
+  <div class="card">
+    <h3>Recent Leave Requests</h3>
+    {% if recent_leaves %}
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for lr in recent_leaves %}
+          <tr>
+            <td>{{ lr.full_name }}</td>
+            <td>{{ lr.leave_type }}</td>
+            <td>{{ lr.start_date }} → {{ lr.end_date }}</td>
+            <td>
+              {% if lr.status == 'Approved' %}<span class="badge badge-success">Approved</span>
+              {% elif lr.status == 'Rejected' %}<span class="badge badge-danger">Rejected</span>
+              {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="ic">🗓️</div><h3>No leave requests yet</h3></div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Recently Added Employees</h3>
+    {% if recent_employees %}
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Employee</th><th>Department</th><th>Joined</th></tr></thead>
+        <tbody>
+        {% for e in recent_employees %}
+          <tr>
+            <td>{{ e.full_name }} <span style="color:var(--text-secondary);">({{ e.employee_code }})</span></td>
+            <td>{{ e.department or '—' }}</td>
+            <td>{{ e.joining_date or '—' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="ic">🧑‍💼</div><h3>No employees yet</h3></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="section-title-row" style="margin-top:28px;">
+  <h2>HR Communication</h2>
+</div>
+<div class="grid grid-2" id="hr-communication" style="align-items:start; scroll-margin-top:20px;">
+  <div class="card">
+    <h3>Send a Message</h3>
+    <form method="POST" action="{{ url_for('admin.send_hr_communication') }}">
+      <div class="form-group">
+        <label>To <span class="req">*</span></label>
+        <select name="to_type" id="hrCommToType" required>
+          <option value="">Select recipient</option>
+          <option value="individual">Individual Employee</option>
+          <option value="all">All Employees</option>
+        </select>
+      </div>
+      <div class="form-group" id="hrCommEmployeeGroup" style="display:none;">
+        <label>Employee <span class="req">*</span></label>
+        <select name="employee_id" id="hrCommEmployee">
+          <option value="">Select an employee</option>
+          {% for e in hr_comm_employees %}
+          <option value="{{ e.id }}">{{ e.full_name }} ({{ e.employee_code }}) — {{ e.department or 'Unassigned' }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Subject <span class="req">*</span></label>
+        <input type="text" name="subject" maxlength="150" placeholder="e.g. Updated Work-From-Home Policy" required>
+      </div>
+      <div class="form-group">
+        <label>Message <span class="req">*</span></label>
+        <textarea name="message" placeholder="Type the message you want to send…" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Send via <span class="req">*</span></label>
+        <select name="channel" required>
+          <option value="">Select channel</option>
+          <option value="notification">Notification</option>
+          <option value="email">Email</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">📩 Send Message</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Recent Communications</h3>
+    {% if hr_comm_recent %}
+      {% for c in hr_comm_recent %}
+      <div class="doc-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
+        <div style="display:flex; justify-content:space-between; width:100%; gap:8px;">
+          <strong>📩 {{ c.subject }}</strong>
+          <span style="font-size:11.5px; color:var(--text-secondary); white-space:nowrap;">{{ c.created_at }}</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="badge badge-primary">{{ c.recipient_label }}</span>
+          {% if c.channel == 'both' %}
+            <span class="badge badge-success">Notification + Email</span>
+          {% elif c.channel == 'email' %}
+            <span class="badge badge-warning">Email</span>
+          {% else %}
+            <span class="badge badge-neutral">Notification</span>
+          {% endif %}
+          {% if c.email_failed_count %}
+            <span class="badge badge-danger">{{ c.email_failed_count }} email failure(s)</span>
+          {% endif %}
+        </div>
+        <div style="font-size:13.5px;">{{ c.message }}</div>
+        <div style="font-size:11px; color:var(--text-secondary);">
+          Sent by {{ c.sent_by or 'HR' }}
+          {% if c.channel in ('notification','both') %} · {{ c.notified_count }} notified{% endif %}
+          {% if c.channel in ('email','both') %} · {{ c.emailed_count }} emailed{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state" style="padding:30px 10px;">
+      <div class="ic">📩</div>
+      <h3>No messages sent yet</h3>
+      <p>Messages you send to employees will be logged here.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var toType = document.getElementById("hrCommToType");
+    var empGroup = document.getElementById("hrCommEmployeeGroup");
+    var empSelect = document.getElementById("hrCommEmployee");
+    if (!toType || !empGroup || !empSelect) return;
+
+    function syncEmployeeField() {
+      if (toType.value === "individual") {
+        empGroup.style.display = "";
+        empSelect.setAttribute("required", "required");
+      } else {
+        empGroup.style.display = "none";
+        empSelect.removeAttribute("required");
+        empSelect.value = "";
+      }
+    }
+    toType.addEventListener("change", syncEmployeeField);
+    syncEmployeeField();
+
+    {% if request.args.get('scroll') == 'hr-communication' %}
+    document.getElementById("hr-communication").scrollIntoView();
+    {% endif %}
+  })();
+</script>
+{% endblock %}

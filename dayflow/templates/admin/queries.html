@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Employee Queries{% endblock %}
+{% block page_title %}Employee Queries{% endblock %}
+{% block page_subtitle %}Questions employees have submitted via Ask HR{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <a href="{{ url_for('admin.queries') }}" class="btn btn-sm {{ 'btn-primary' if not status_filter else 'btn-outline' }}">All</a>
+  <a href="{{ url_for('admin.queries', status='Pending') }}" class="btn btn-sm {{ 'btn-primary' if status_filter == 'Pending' else 'btn-outline' }}">Pending</a>
+  <a href="{{ url_for('admin.queries', status='Replied') }}" class="btn btn-sm {{ 'btn-primary' if status_filter == 'Replied' else 'btn-outline' }}">Replied</a>
+  <a href="{{ url_for('admin.queries', status='Resolved') }}" class="btn btn-sm {{ 'btn-primary' if status_filter == 'Resolved' else 'btn-outline' }}">Resolved</a>
+</div>
+
+<div class="card">
+  {% if rows %}
+  <div class="table-wrap" style="border:none;">
+    <table>
+      <thead><tr><th>Employee</th><th>Subject</th><th>Status</th><th>Last Updated</th><th></th></tr></thead>
+      <tbody>
+      {% for q in rows %}
+        <tr>
+          <td>{{ q.full_name }} <span style="color:var(--text-secondary);">({{ q.employee_code }})</span></td>
+          <td>{{ q.subject }}</td>
+          <td>
+            {% if q.status == 'Resolved' %}<span class="badge badge-success">Resolved</span>
+            {% elif q.status == 'Replied' %}<span class="badge badge-primary">Replied</span>
+            {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+          </td>
+          <td>{{ q.updated_at }}</td>
+          <td><a href="{{ url_for('admin.query_detail', query_id=q.id) }}" class="btn btn-outline btn-sm">Open</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="ic">💬</div>
+    <h3>No queries yet</h3>
+    <p>Employee questions submitted through Ask HR will show up here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

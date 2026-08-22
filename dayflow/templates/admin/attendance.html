@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance Management{% endblock %}
+{% block page_subtitle %}Viewing attendance for {{ filter_date }}{% endblock %}
+
+{% block content %}
+<form method="GET" class="toolbar">
+  <input type="date" name="date" value="{{ filter_date }}" onchange="this.form.submit()" style="max-width:180px;">
+  <select name="department" onchange="this.form.submit()" style="max-width:200px;">
+    <option value="">All Departments</option>
+    {% for d in departments %}
+    <option value="{{ d.department }}" {{ 'selected' if department == d.department }}>{{ d.department }}</option>
+    {% endfor %}
+  </select>
+  <div class="search-box grow">
+    <span class="ic">🔎</span>
+    <input type="search" name="search" value="{{ search }}" placeholder="Search employee">
+  </div>
+  <button type="submit" class="btn btn-outline">Apply</button>
+</form>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>ID</th><th>Department</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.employee_code }}</td>
+        <td>{{ r.department or '—' }}</td>
+        <td>{{ r.check_in or '—' }}</td>
+        <td>{{ r.check_out or '—' }}</td>
+        <td>
+          {% if r.status == 'Present' %}<span class="badge badge-success">Present</span>
+          {% elif r.status == 'Half-Day' %}<span class="badge badge-warning">Half-Day</span>
+          {% elif r.status == 'Leave' %}<span class="badge badge-primary">Leave</span>
+          {% elif r.status == 'Absent' %}<span class="badge badge-danger">Absent</span>
+          {% else %}<span class="badge badge-neutral">Not Marked</span>{% endif %}
+        </td>
+        <td style="white-space:nowrap;">
+          <button type="button" class="btn btn-outline btn-sm" data-modal-target="#markModal{{ r.employee_id }}">
+            {{ 'Edit' if r.attendance_id else 'Mark' }}
+          </button>
+          {% if r.attendance_id %}
+          <form method="POST" action="{{ url_for('admin.delete_attendance', att_id=r.attendance_id) }}" style="display:inline;" data-confirm="Delete this attendance record?">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+
+      <div class="modal-overlay" id="markModal{{ r.employee_id }}">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h3 style="margin:0;">{{ r.full_name }} — {{ filter_date }}</h3>
+            <button class="modal-close" data-modal-close>✕</button>
+          </div>
+          <form method="POST" action="{{ url_for('admin.mark_attendance') }}">
+            <input type="hidden" name="employee_id" value="{{ r.employee_id }}">
+            <input type="hidden" name="att_date" value="{{ filter_date }}">
+            <div class="form-group">
+              <label>Status</label>
+              <select name="status">
+                {% for s in ['Present','Absent','Half-Day','Leave'] %}
+                <option value="{{ s }}" {{ 'selected' if r.status == s }}>{{ s }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Check In</label>
+                <input type="time" name="check_in" value="{{ r.check_in or '' }}">
+              </div>
+              <div class="form-group">
+                <label>Check Out</label>
+                <input type="time" name="check_out" value="{{ r.check_out or '' }}">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Save Attendance</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <tr><td colspan="7">
+        <div class="empty-state">
+          <div class="ic">🕒</div>
+          <h3>No employees found</h3>
+          <p>Try a different date, department or search term.</p>
+        </div>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Recognize Employee{% endblock %}
+{% block page_title %}Recognize Employee{% endblock %}
+{% block page_subtitle %}Celebrate great work and send it straight to their notifications{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card">
+    <h3>New Recognition</h3>
+    <form method="POST">
+      <div class="form-group">
+        <label>Employee <span class="req">*</span></label>
+        <select name="employee_id" required>
+          <option value="">Select an employee</option>
+          {% for e in employees %}
+          <option value="{{ e.id }}">{{ e.full_name }} ({{ e.employee_code }}) — {{ e.department or 'Unassigned' }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category / Reason</label>
+        <select name="category">
+          <option value="">General</option>
+          <option>Outstanding Performance</option>
+          <option>Teamwork</option>
+          <option>Innovation</option>
+          <option>Leadership</option>
+          <option>Going Above and Beyond</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Recognition Message <span class="req">*</span></label>
+        <textarea name="message" placeholder="Great work, [Employee Name]! Your dedication and contribution are truly appreciated." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">⭐ Send Recognition</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Recent Recognitions</h3>
+    {% if recent %}
+      {% for r in recent %}
+      <div class="doc-item" style="flex-direction:column; align-items:flex-start; gap:4px;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <strong>⭐ {{ r.full_name }}</strong>
+          <span style="font-size:11.5px; color:var(--text-secondary);">{{ r.created_at }}</span>
+        </div>
+        {% if r.category %}<span class="badge badge-primary">{{ r.category }}</span>{% endif %}
+        <div style="font-size:13.5px;">{{ r.message }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state" style="padding:30px 10px;">
+      <div class="ic">⭐</div>
+      <h3>No recognitions yet</h3>
+      <p>Employees you recognize will be listed here.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

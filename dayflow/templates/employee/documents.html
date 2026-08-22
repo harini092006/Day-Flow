@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Documents{% endblock %}
+{% block page_title %}My Documents{% endblock %}
+{% block page_subtitle %}Manage your uploaded documents{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="section-title-row" style="margin:0 0 14px;">
+    <h3 style="margin:0;">All Documents</h3>
+    <button type="button" class="btn btn-primary btn-sm" data-modal-target="#uploadDocModal">➕ Upload Document</button>
+  </div>
+  {% if documents %}
+    {% for d in documents %}
+    <div class="doc-item">
+      <div>📄 <strong>{{ d.doc_type }}</strong> — {{ d.original_name or d.filename }} <span style="color:var(--text-secondary); font-size:12px;">({{ d.uploaded_at }})</span></div>
+      <a href="{{ url_for('static', filename='uploads/documents/' + d.filename) }}" target="_blank" class="btn btn-outline btn-sm">View</a>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state" style="padding:30px 10px;">
+    <div class="ic">📁</div>
+    <h3>No documents uploaded</h3>
+    <p>Upload your Aadhaar, resume, offer letter or certificates to keep them handy.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="modal-overlay" id="uploadDocModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 style="margin:0;">Upload Document</h3><button class="modal-close" data-modal-close>✕</button></div>
+    <form method="POST" action="{{ url_for('employee.upload_document') }}" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Document Type</label>
+        <select name="doc_type">
+          <option>Aadhaar</option>
+          <option>Resume</option>
+          <option>Offer Letter</option>
+          <option>Certificate</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>File (PDF, PNG or JPG)</label>
+        <input type="file" name="document" accept=".pdf,.png,.jpg,.jpeg" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Upload</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

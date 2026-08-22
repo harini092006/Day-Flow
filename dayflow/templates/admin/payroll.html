@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Payroll{% endblock %}
+{% block page_title %}Payroll Management{% endblock %}
+{% block page_subtitle %}Update salary structures and generate monthly salary slips{% endblock %}
+
+{% block content %}
+{% if employees %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>Basic</th><th>Allowance</th><th>Deduction</th><th>Net Salary</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for e in employees %}
+      <tr>
+        <td>{{ e.full_name }}<br><span style="color:var(--text-secondary); font-size:12px;">{{ e.employee_code }}</span></td>
+        <td>₹{{ "{:,.2f}".format(e.basic_salary) }}</td>
+        <td>₹{{ "{:,.2f}".format(e.allowance) }}</td>
+        <td>₹{{ "{:,.2f}".format(e.deduction) }}</td>
+        <td><strong>₹{{ "{:,.2f}".format(e.basic_salary + e.allowance - e.deduction) }}</strong></td>
+        <td style="white-space:nowrap;">
+          <button type="button" class="btn btn-outline btn-sm" data-modal-target="#editSalary{{ e.id }}">Update</button>
+          <button type="button" class="btn btn-primary btn-sm" data-modal-target="#genSlip{{ e.id }}">Generate Slip</button>
+        </td>
+      </tr>
+
+      <div class="modal-overlay" id="editSalary{{ e.id }}">
+        <div class="modal-box">
+          <div class="modal-header"><h3 style="margin:0;">Update Salary — {{ e.full_name }}</h3><button class="modal-close" data-modal-close>✕</button></div>
+          <form method="POST" action="{{ url_for('admin.update_payroll', emp_id=e.id) }}">
+            <div class="form-group"><label>Basic Salary (₹)</label><input type="number" name="basic_salary" value="{{ e.basic_salary }}" step="0.01" min="0"></div>
+            <div class="form-group"><label>Allowance (₹)</label><input type="number" name="allowance" value="{{ e.allowance }}" step="0.01" min="0"></div>
+            <div class="form-group"><label>Deduction (₹)</label><input type="number" name="deduction" value="{{ e.deduction }}" step="0.01" min="0"></div>
+            <button type="submit" class="btn btn-primary btn-block">Save</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="genSlip{{ e.id }}">
+        <div class="modal-box">
+          <div class="modal-header"><h3 style="margin:0;">Generate Salary Slip — {{ e.full_name }}</h3><button class="modal-close" data-modal-close>✕</button></div>
+          <form method="POST" action="{{ url_for('admin.generate_payroll', emp_id=e.id) }}">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Month</label>
+                <select name="month">
+                  {% for m in range(1,13) %}<option value="{{ m }}" {{ 'selected' if m == month }}>{{ m }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Year</label>
+                <input type="number" name="year" value="{{ year }}" min="2020" max="2100">
+              </div>
+            </div>
+            <p class="help-text">This will generate a payslip using the employee's current salary structure and notify them.</p>
+            <button type="submit" class="btn btn-primary btn-block">Generate</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="ic">💰</div>
+  <h3>No employees to pay yet</h3>
+  <p>Add employees first to manage their payroll here.</p>
+</div>
+{% endif %}
+{% endblock %}

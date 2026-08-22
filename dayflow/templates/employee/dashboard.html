@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block page_subtitle %}Welcome back, {{ session.get('full_name') }}{% endblock %}
+
+{% block content %}
+<div class="grid grid-4">
+  <div class="card stat-card">
+    <div class="stat-icon">🕒</div>
+    <div class="stat-value" style="font-size:16px;">
+      {% if today_att and today_att.check_in and today_att.check_out %}Completed
+      {% elif today_att and today_att.check_in %}Checked In
+      {% else %}Not Checked In{% endif %}
+    </div>
+    <div class="stat-label">Today's Attendance</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">📈</div>
+    <div class="stat-value">{{ attendance_pct }}%</div>
+    <div class="stat-label">Attendance This Month</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">🗓️</div>
+    <div class="stat-value">{{ leave_balance }}</div>
+    <div class="stat-label">Leave Balance (Days)</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">₹{{ "{:,.0f}".format(net_salary) }}</div>
+    <div class="stat-label">Net Salary / Month</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:22px;">
+  <h3>Quick Check-In / Check-Out</h3>
+  <p style="color:var(--text-secondary); font-size:13.5px;">
+    {% if today_att and today_att.check_in %}
+      Checked in at <strong>{{ today_att.check_in }}</strong>{% if today_att.check_out %} · Checked out at <strong>{{ today_att.check_out }}</strong>{% endif %}
+    {% else %}
+      You haven't checked in yet today.
+    {% endif %}
+  </p>
+  <form method="POST" action="{{ url_for('employee.attendance') }}" style="display:flex; gap:10px;">
+    <button type="submit" name="action" value="check_in" class="btn btn-primary" {{ 'disabled' if today_att and today_att.check_in }}>✅ Check In</button>
+    <button type="submit" name="action" value="check_out" class="btn btn-outline" {{ 'disabled' if not today_att or not today_att.check_in or today_att.check_out }}>🚪 Check Out</button>
+  </form>
+</div>
+
+<div class="grid grid-2" style="margin-top:22px; align-items:start;">
+  <div class="card">
+    <h3>Recent Attendance</h3>
+    {% if recent_attendance %}
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for a in recent_attendance %}
+          <tr>
+            <td>{{ a.att_date }}</td><td>{{ a.check_in or '—' }}</td><td>{{ a.check_out or '—' }}</td>
+            <td>
+              {% if a.status == 'Present' %}<span class="badge badge-success">Present</span>
+              {% elif a.status == 'Half-Day' %}<span class="badge badge-warning">Half-Day</span>
+              {% elif a.status == 'Leave' %}<span class="badge badge-primary">Leave</span>
+              {% else %}<span class="badge badge-danger">Absent</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="ic">🕒</div><h3>No attendance yet</h3></div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Recent Leave Requests</h3>
+    {% if recent_leaves %}
+    <div class="table-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Type</th><th>Dates</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for lr in recent_leaves %}
+          <tr>
+            <td>{{ lr.leave_type }}</td><td>{{ lr.start_date }} → {{ lr.end_date }}</td>
+            <td>
+              {% if lr.status == 'Approved' %}<span class="badge badge-success">Approved</span>
+              {% elif lr.status == 'Rejected' %}<span class="badge badge-danger">Rejected</span>
+              {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="ic">🗓️</div><h3>No leave requests yet</h3></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block page_subtitle %}Insights across attendance, leave, payroll and headcount{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Department-wise Employees</h3>
+    {% if dept_rows %}
+      {% set max_c = dept_rows|map(attribute='c')|max %}
+      {% for d in dept_rows %}
+      <div class="chart-bar-row">
+        <div class="label">{{ d.department }}</div>
+        <div class="chart-bar-track"><div class="chart-bar-fill" style="width:{{ (d.c / max_c * 100) if max_c else 0 }}%;"></div></div>
+        <div class="value">{{ d.c }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-secondary); font-size:13px;">No department data yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Attendance (Last 30 Days)</h3>
+    {% if attendance_rows %}
+      {% set max_a = attendance_rows|map(attribute='c')|max %}
+      {% for a in attendance_rows %}
+      <div class="chart-bar-row">
+        <div class="label">{{ a.status }}</div>
+        <div class="chart-bar-track"><div class="chart-bar-fill" style="width:{{ (a.c / max_a * 100) if max_a else 0 }}%;"></div></div>
+        <div class="value">{{ a.c }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-secondary); font-size:13px;">No attendance data yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
+  <div class="card">
+    <h3>Monthly Payroll (Last 6 Cycles)</h3>
+    {% if payroll_rows %}
+      {% set max_p = payroll_rows|map(attribute='total')|max %}
+      {% for p in payroll_rows %}
+      <div class="chart-bar-row">
+        <div class="label">{{ month_names[p.month] }} {{ p.year }}</div>
+        <div class="chart-bar-track"><div class="chart-bar-fill" style="width:{{ (p.total / max_p * 100) if max_p else 0 }}%;"></div></div>
+        <div class="value">₹{{ "{:,.0f}".format(p.total) }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-secondary); font-size:13px;">No payroll cycles generated yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Approved Leave by Type</h3>
+    {% if leave_rows %}
+      {% set max_l = leave_rows|map(attribute='c')|max %}
+      {% for l in leave_rows %}
+      <div class="chart-bar-row">
+        <div class="label">{{ l.leave_type }}</div>
+        <div class="chart-bar-track"><div class="chart-bar-fill" style="width:{{ (l.c / max_l * 100) if max_l else 0 }}%;"></div></div>
+        <div class="value">{{ l.c }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-secondary); font-size:13px;">No approved leaves yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="section-title-row"><h2>Export Reports</h2></div>
+<div class="grid grid-4">
+  {% for r in [('employees','Employee Report','🧑‍💼'), ('attendance','Attendance Report','🕒'), ('leave','Leave Report','🗓️'), ('payroll','Payroll Report','💰')] %}
+  <div class="card">
+    <div style="font-size:20px;">{{ r[2] }}</div>
+    <h4 style="margin-top:8px;">{{ r[1] }}</h4>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <a href="{{ url_for('admin.export_report', report_type=r[0], fmt='pdf') }}" class="btn btn-outline btn-sm">PDF</a>
+      <a href="{{ url_for('admin.export_report', report_type=r[0], fmt='excel') }}" class="btn btn-outline btn-sm">Excel</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

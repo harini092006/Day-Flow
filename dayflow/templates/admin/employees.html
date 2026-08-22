@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Employees{% endblock %}
+{% block page_title %}Employee Management{% endblock %}
+{% block page_subtitle %}{{ employees|length }} employee(s) found{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+  <form method="GET" class="toolbar grow" style="margin:0;">
+    <div class="search-box grow">
+      <span class="ic">🔎</span>
+      <input type="search" name="search" value="{{ search }}" placeholder="Search by name, ID or email">
+    </div>
+    <select name="department" onchange="this.form.submit()" style="max-width:200px;">
+      <option value="">All Departments</option>
+      {% for d in departments %}
+      <option value="{{ d.department }}" {{ 'selected' if department == d.department }}>{{ d.department }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline">Filter</button>
+  </form>
+  <a href="{{ url_for('admin.add_employee') }}" class="btn btn-primary">➕ Add Employee</a>
+</div>
+
+{% if employees %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>ID</th><th>Department</th><th>Job Title</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for e in employees %}
+      <tr>
+        <td style="display:flex; align-items:center; gap:10px;">
+          <div class="avatar">
+            {% if e.profile_photo %}<img src="{{ url_for('static', filename='uploads/profile/' + e.profile_photo) }}">{% else %}{{ e.full_name[:1] }}{% endif %}
+          </div>
+          {{ e.full_name }}
+        </td>
+        <td>{{ e.employee_code }}</td>
+        <td>{{ e.department or '—' }}</td>
+        <td>{{ e.job_title or '—' }}</td>
+        <td>{{ e.email }}</td>
+        <td>{% if e.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-neutral">Inactive</span>{% endif %}</td>
+        <td style="white-space:nowrap;">
+          <a href="{{ url_for('admin.employee_profile', emp_id=e.id) }}" class="btn btn-outline btn-sm">View</a>
+          <a href="{{ url_for('admin.edit_employee', emp_id=e.id) }}" class="btn btn-outline btn-sm">Edit</a>
+          <form method="POST" action="{{ url_for('admin.delete_employee', emp_id=e.id) }}" style="display:inline;" data-confirm="Delete {{ e.full_name }}? This cannot be undone.">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="ic">🧑‍💼</div>
+  <h3>No employees found</h3>
+  <p>Try adjusting your search or filters, or add a new employee to get started.</p>
+  <a href="{{ url_for('admin.add_employee') }}" class="btn btn-primary">➕ Add Employee</a>
+</div>
+{% endif %}
+{% endblock %}

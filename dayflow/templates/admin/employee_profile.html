@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ employee.full_name }}{% endblock %}
+{% block page_title %}Employee Profile{% endblock %}
+{% block page_subtitle %}Viewing full record for {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="card profile-header">
+  <div class="avatar-lg">
+    {% if employee.profile_photo %}<img src="{{ url_for('static', filename='uploads/profile/' + employee.profile_photo) }}">{% else %}{{ employee.full_name[:1] }}{% endif %}
+  </div>
+  <div style="flex:1;">
+    <h2>{{ employee.full_name }}</h2>
+    <div class="meta">
+      <span>🆔 {{ employee.employee_code }}</span>
+      <span>✉️ {{ employee.email }}</span>
+      <span>🏢 {{ employee.department or 'Unassigned' }}</span>
+    </div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="{{ url_for('admin.edit_employee', emp_id=employee.id) }}" class="btn btn-outline">Edit Profile</a>
+    <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">Back to List</a>
+  </div>
+</div>
+
+<div class="grid grid-3" style="margin-top:18px;">
+  <div class="card stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value">{{ attendance_count }}</div>
+    <div class="stat-label">Days Present (All Time)</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">🗓️</div>
+    <div class="stat-value">{{ leave_count }}</div>
+    <div class="stat-label">Approved Leaves</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">₹{{ "{:,.0f}".format(employee.basic_salary + employee.allowance - employee.deduction) }}</div>
+    <div class="stat-label">Net Monthly Salary</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:22px; align-items:start;">
+  <div class="card">
+    <h3>Personal Details</h3>
+    <dl class="info-list">
+      <dt>Gender</dt><dd>{{ employee.gender or '—' }}</dd>
+      <dt>Date of Birth</dt><dd>{{ employee.dob or '—' }}</dd>
+      <dt>Phone</dt><dd>{{ employee.phone or '—' }}</dd>
+      <dt>Address</dt><dd>{{ employee.address or '—' }}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3>Job Details</h3>
+    <dl class="info-list">
+      <dt>Job Title</dt><dd>{{ employee.job_title or '—' }}</dd>
+      <dt>Department</dt><dd>{{ employee.department or '—' }}</dd>
+      <dt>Joining Date</dt><dd>{{ employee.joining_date or '—' }}</dd>
+      <dt>Employment Type</dt><dd>{{ employee.employment_type or '—' }}</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="card" style="margin-top:22px;">
+  <h3>Salary Structure</h3>
+  <div class="grid grid-3">
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Basic Pay</div><div style="font-weight:800; font-size:18px;">₹{{ "{:,.2f}".format(employee.basic_salary) }}</div></div>
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Allowance</div><div style="font-weight:800; font-size:18px; color:var(--success);">+₹{{ "{:,.2f}".format(employee.allowance) }}</div></div>
+    <div><div style="color:var(--text-secondary); font-size:12.5px;">Deduction</div><div style="font-weight:800; font-size:18px; color:var(--danger);">−₹{{ "{:,.2f}".format(employee.deduction) }}</div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:22px;">
+  <h3>Documents</h3>
+  {% if documents %}
+    {% for d in documents %}
+    <div class="doc-item">
+      <div>📄 <strong>{{ d.doc_type }}</strong> — {{ d.original_name or d.filename }}</div>
+      <a href="{{ url_for('static', filename='uploads/documents/' + d.filename) }}" target="_blank" class="btn btn-outline btn-sm">View</a>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty-state" style="padding:30px 10px;">
+    <div class="ic">📁</div>
+    <h3>No documents uploaded</h3>
+    <p>This employee hasn't uploaded any documents yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
